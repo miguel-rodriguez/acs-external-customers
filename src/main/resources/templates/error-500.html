@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet"	href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="css/app.css">
+</head>
+
+<body>
+	<div class="center" style="padding: 10%;">
+		<div class="container"
+			style="padding: 2%; width: 600px; border-style: solid; border-color: lightgrey; border-width: 0.5px; border-radius: 10px; box-shadow: 5px 5px 5px #888888;">
+			<br />
+			<!-- Alfresco logo -->
+			<div>
+				<img class="rotating-img" style="display: inline; margin: 0 10px;"
+					src="app-logo-large.png" alt="Alfresco">
+				<h3 style="display: inline; margin: 0 10px;">Alfresco Content Services</h3>
+				<p/>
+	            <div>
+					<h3 style="display: inline; margin: 0 10px;">Something went wrong! </h3>
+					<p/>
+					<h3 style="display: inline; margin: 0 10px;" th:text="${message}"></h3>
+					<p/><p/>
+					<a style="display: inline; margin: 0 10px;" href="/login">Login to Alfresco</a>
+	            </div>
+	        </div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+   <head>
+      <title>Alfresco Content Services - Search results</title>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+      crossorigin="anonymous">
+      <link rel="stylesheet" href="css/dataTables.bootstrap.min.css" />
+      <link rel="stylesheet" href="css/responsive.bootstrap.min.css" type="text/css" />
+      <link rel="stylesheet" href="css/buttons.bootstrap.min.css" type="text/css" />
+      <link rel="stylesheet" href="css/select.dataTables.min.css">
+      <link rel="stylesheet" href="css/app.css" type="text/css">
+      <link rel="stylesheet" href="css/animate.css" type="text/css">
+      
+      <script src="js/jquery-3.3.1.slim.min.js"></script>
+      <script src="js/bootstrap.min.js"></script>
+      <script src="js/jquery.dataTables.min.js"></script>
+      <script src="js/dataTables.bootstrap.min.js"></script>
+      <!-- Responsive extension -->
+      <script	src="js/responsive.bootstrap.min.js"></script>
+      <!-- Buttons extension -->
+      <script src="js/dataTables.buttons.min.js"></script>
+      <script src="js/buttons.bootstrap.min.js"></script>
+      <script src="js/buttons.html5.min.js"></script>
+      <script src="js/dataTables.select.min.js"></script>
+    </head>
+   <body>
+      
+      <!-- Add navigation bar here -->
+      <div class="center" th:insert="navBar :: navBar"></div>
+      
+      <div id="dropContainer">
+         <!-- List content -->
+         <div th:if="${objects} != null">
+            <div class="center panel panel-primary">
+               <div class="panel-heading">
+                   <span> 
+                   		<a th:attr="onclick=|navigateTo('${path}',back=true)|"
+		                  style="color: white; text-decoration: none; cursor:pointer;"><span
+		                  class="glyphicon glyphicon-circle-arrow-left"
+		                  aria-hidden="true"></span>&nbsp; Back &nbsp; &nbsp; | &nbsp; &nbsp;
+		               	</a>
+	               </span>
+                  <b><span th:text="'Path: ' + ${path}"></span></b>
+                  <span style="float:right; ">
+                  <a id="copyNodesImage" th:attr="onclick=|copyNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+                     class="glyphicon glyphicon-copy"
+                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Copy&nbsp; &nbsp; | &nbsp; &nbsp;</a>
+                  <span th:if="${canCreate}" style="float:right; ">
+                  <a id="moveNodesImage" th:attr="onclick=|moveNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+                     class="glyphicon glyphicon-move"
+                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Move&nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
+                  <a id="pasteNodesImage" th:attr="onclick=|pasteNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:inline"><span
+	                 class="glyphicon glyphicon-paste"
+	                 aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Paste &nbsp; &nbsp; | &nbsp; &nbsp;</a>
+                  <a id="deleteNodesImage" onclick="confirmDeleteNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+                     class="glyphicon glyphicon-remove"
+                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Delete &nbsp; &nbsp; | &nbsp; &nbsp;</a>
+                  <a id="createFolderImage" onclick="createFolder()" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
+                     class="glyphicon glyphicon-folder-open"
+                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Create &nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
+                  <a id="upload" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
+                     class="glyphicon glyphicon-upload"
+                     aria-hidden="true" style="cursor:pointer; "></span>&nbsp; Upload</a>
+                  </span>
+				  </span>
+               </div>
+               <div th:if="${not #lists.isEmpty(objects)}">
+                  <div style="padding: 10px;">
+                     <table class="display content table table-hover table-bordered" id="data">
+                        <thead>
+                           <tr>
+                           	  <!--  hidden columns -->
+                              <th style="display:none; visibility:collapse;">nodePath</th>
+                              <th style="display:none; visibility:collapse;">canDelete</th>
+                              <th>Name</th>
+                              <th>Created By</th>
+                              <th>Last Modified By</th>
+                              <th>Modification Date</th>
+                              <th>Version</th>
+                              <th>Size (Kb)</th>
+                              <th style="text-align: center; ">Download</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr th:each="object : ${objects}">
+                              <td th:text="${path + '/' + object.name}" style="display:none; visibility:collapse;"></td>
+                              <td th:text="${object.canDelete}" style="display:none; visibility:collapse;"></td>
+                              <!-- Object name -->
+                              <td>
+                                 <div th:if="${object.baseTypeId} == 'cmis:folder'">
+                                    <a
+                                       style="text-decoration: none; cursor:pointer;"
+                                       th:attr="onclick=|navigateTo('${path}/${object.name}',back=false)|"> <span
+                                       class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                                    &nbsp; &nbsp; <span style="margin: 0px 15px 0px 0px;"
+                                       th:text="' ' + ${object.name}"></span>
+                                    </a>
+                                 </div>
+                                 <div th:if="${object.baseTypeId} != 'cmis:folder'">
+                                    <span
+                                       class="glyphicon glyphicon glyphicon-book" aria-hidden="true"
+                                       style="margin: 0px 15px 0px 0px;"></span> <span
+                                       th:text="' ' + ${object.name}"></span>
+                                 </div>
+                              </td>
+                              <td th:text="${object.createdBy}"></td>
+                              <td th:text="${object.lastModifiedBy}"></td>
+                              <td th:text="${object.lastModificationDate}"></td>
+                              <td th:text="${object.version}"></td>
+                              <td th:text="${object.size}"></td>
+                              <td style="text-align: center; ">
+                                 <!-- Download action -->
+                                 <span th:switch="${object.baseTypeId}">
+                                 <span th:case="'cmis:document'">
+                                 <a id="downloadNodesImage" th:attr="onclick=|downloadNodes('${path}/${object.name}','${path}')|"  style="align=right; color: green; text-decoration: none; cursor:pointer;">
+                                 <label th:title="${'Download file: ' + object.name}" ><span
+                                    class="glyphicon glyphicon-download"
+                                    aria-hidden="true" style="margin: 0px 15px 0px 0px;">
+                                 </span></label>
+                                 </a>
+                                 </span>
+                                 </span>
+                                 <!--  end of Download action -->
+                              </td>                              
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+               <div>
+                  <p></p>
+                  <div class="center panel panel-default "
+                     th:if="${#lists.isEmpty(objects)}">
+                     <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true">
+                     </span> No data found
+                  </div>
+                  <p></p>
+               </div>
+            </div>
+         </div>
+      </div>
+      
+		<!--  Upload content form -->
+		<form id="uploadForm" enctype="multipart/form-data" method="POST">
+		   <input type="file" id="uploadFiles" name="uploadFiles"  multiple onchange="this.form.submit()" style="visibility:hidden;">
+		   <input type="text" id="path" name="path" th:value="${path}" style="visibility:hidden;" />            
+		</form>
+		
+		<!-- Create folders form - called from content.js script -->
+		<form id="createFolderForm" method="POST">
+		   <input type="text" id="folderName" name="folderName" th:value="*{folderName}" style="visibility:hidden;">
+		   <input type="text" id="path" name="path" th:value="${path}" style="visibility:hidden;" />
+		</form>         
+		<form id="navigateToForm" method="POST">
+		   <input type="text" id="navigateTo" name="navigateTo" style="visibility:hidden;" />
+		   <input type="text" id="back" name="back" style="visibility:hidden;" />
+		</form> 
+		<form id="dragAndDrop" enctype="multipart/form-data" method="POST">
+		    <input type="file" id="uploadFiles2" name="uploadFiles2" multiple onchange="uploadContent()" style="visibility:hidden;" />
+		    <input type="text" id="path" name="path" th:value="${path}" style="visibility:hidden;" />
+		</form>
+		<form id="deleteFilesForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="deleteFiles" name="deleteFiles" style="visibility:hidden;" />
+		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />
+		</form>
+		<form id="downloadFilesForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="downloadFiles" name="downloadFiles" style="visibility:hidden;" />
+		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />         
+		</form>
+		<!-- 
+		<form id="copyFilesForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="copyFiles" name="copyFiles" style="visibility:hidden;" />
+		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />         
+		</form>
+		<form id="moveFilesForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="moveFiles" name="moveFiles" style="visibility:hidden;" />
+		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />         
+		</form>
+		-->		
+		<form id="pasteFilesForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="sourceFolder" name="sourceFolder" style="visibility:hidden;" />
+		   <input type="text" id="destinationFolder" name="destinationFolder" style="visibility:hidden;" />
+		   <input type="text" id="pasteAction" name="pasteAction" style="visibility:hidden;" />
+		   <input type="text" id="pasteFiles" name="pasteFiles" style="visibility:hidden;" />
+		</form>		
+		<!-- Pop up window for delete nodes -->
+		<div class="modal fade" id="deleteFileWindow" tabindex="-1" role="dialog">
+		   <div class="modal-dialog" role="document">
+		      <div class="modal-content">
+		         <div class="modal-body">
+		            <h4>Confirm delete operation</h4>
+		         </div>
+		         <div class="modal-footer">
+		            <button type="button" class="btn btn-danger" onclick="deleteNodes(action=true);">Delete</button>
+		            <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+		         </div>
+		      </div>
+		      <!-- /.modal-content -->
+		   </div>
+		   <!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+      
+		<!-- Pop up window for create folder -->
+		<div class="modal fade" id="createFolderWindow" tabindex="-1" role="dialog" >
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-body">
+		           <h4>Enter folder name</h4>
+		      
+		        <form>
+		          <div class="form-group">
+		            <input type="text" class="form-control" id="folderNameInput">
+		          </div>
+		        </form>
+		      </div>
+		      <div class="modal-footer">
+		           <button type="button" class="btn btn-success" onclick="submitCreateFolder(action=true, document.getElementById('folderNameInput').value);">Submit</button>
+		           <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+      <script type="text/javascript" src="js/content.js"></script>
+      <script type="text/javascript" src="js/bootstrap-notify.min.js"></script>
+      
+   </body>
+</html>

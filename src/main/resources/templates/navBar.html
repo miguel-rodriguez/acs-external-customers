@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<body>
+		<div style="padding-top: 20px" th:fragment="navBar">
+		    <nav class="navbar navbar-default center">
+		        <div class="container-fluid">
+		            <!-- Brand and toggle get grouped for better mobile display -->
+		            <div class="navbar-header">
+		                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+		                    <span class="sr-only">Toggle navigation</span>
+		                    <span class="icon-bar"></span>
+		                    <span class="icon-bar"></span>
+		                    <span class="icon-bar"></span>
+		                </button>
+		            </div>
+		
+		            <!-- Collect the nav links, forms, and other content for toggling -->
+		            <a class="navbar-brand" href="/">
+		                <img class="media-object media-middle" alt="Alfresco" src="alfresco.png" height="25" width="25"></img>
+		            </a>
+		            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		                <ul class="nav navbar-nav">
+		                    <li><a href="/"><div class="glyphicon glyphicon-home"></div> Home</a></li>
+		                </ul>
+
+		    			<!-- User details / logout -->
+		                <ul class="nav navbar-nav navbar-right" >	
+		                    <li><a ><div class="glyphicon glyphicon-user"></div><span th:text="' ' + ${user} "></span></a></li>                                        
+		                    <li><a href="logout" ><div class="glyphicon glyphicon-log-out"></div> Log out</a></li>
+		                </ul>
+
+						<!--  Search form -->
+		   				<form  action="#" th:action="@{/search}" th:object="${search}" method="post" style="text-align:right; padding-top: 10px" class="form-inline my-2 my-lg-0">
+		      				<input class="form-control mr-sm-2" type="search" title="3 chars minimum" placeholder="Alfresco Search" th:field="*{term}" pattern=".{3,}" required aria-label="Search">
+		      				<button class="btn btn-default btn-success my-2 my-sm-0" type="submit">Search</button>
+		    			</form>
+		            </div>
+		            <!-- /.navbar-collapse -->
+		        </div>
+		        <!-- /.container-fluid -->
+		    </nav>
+		</div>
+	</body>
+</html>

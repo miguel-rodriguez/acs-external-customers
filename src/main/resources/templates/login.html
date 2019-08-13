@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet"	href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="css/app.css">
+</head>
+
+<body>
+	<div class="center" style="padding: 10%;">
+		<div class="container"
+			style="padding: 2%; width: 600px; border-style: solid; border-color: lightgrey; border-width: 0.5px; border-radius: 10px; box-shadow: 5px 5px 5px #888888;">
+			<br />
+			<!-- Alfresco logo -->
+			<div>
+				<img class="rotating-img" style="display: inline; margin: 0 10px;"
+					src="app-logo-large.png" alt="Alfresco">
+				<h2 style="display: inline; margin: 0 10px;">Welcome to
+					Alfresco</h2>
+			</div>
+			<br />
+			<!-- Login Form -->
+			<div th:fragment="login">
+				<form action="#" th:action="@{/login}" th:object="${login}"
+					method="post" enctype="multipart/form-data">
+					<p>
+						Username: <input type="text" class="form-control"
+							th:field="*{username}" />
+					</p>
+					<p>
+						Password: <input type="password" class="form-control"
+							th:field="*{password}" />
+					</p>
+					<p>
+						<input type="submit" value="Submit" class="btn btn-success" /> <input
+							type="reset" value="Reset" class="btn btn-danger" />
+					</p>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
