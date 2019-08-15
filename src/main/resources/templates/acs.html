@@ -27,13 +27,13 @@
     </head>
    <body>
       
+      
       <!-- Add navigation bar here -->
       <div class="center" th:insert="navBar :: navBar"></div>
       
-      <div id="dropContainer">
-         <!-- List content -->
+           <!-- List content -->
          <div th:if="${objects} != null">
-            <div class="center panel panel-primary">
+            <div class="center panel panel-primary" style="bottom: 0px; height: 100%;">
                <div class="panel-heading">
                    <span> 
                    		<a th:attr="onclick=|navigateTo('${path}',back=true)|"
@@ -88,7 +88,7 @@
                               <td th:text="${path + '/' + object.name}" style="display:none; visibility:collapse;"></td>
                               <td th:text="${object.canDelete}" style="display:none; visibility:collapse;"></td>
                               <!-- Object name -->
-                              <td>
+                              <td nowrap>
                                  <div th:if="${object.baseTypeId} == 'cmis:folder'">
                                     <a
                                        style="text-decoration: none; cursor:pointer;"
@@ -140,8 +140,8 @@
                </div>
             </div>
          </div>
-      </div>
-      
+
+         
 		<!--  Upload content form -->
 		<form id="uploadForm" enctype="multipart/form-data" method="POST">
 		   <input type="file" id="uploadFiles" name="uploadFiles"  multiple onchange="this.form.submit()" style="visibility:hidden;">
@@ -223,7 +223,10 @@
 		    </div>
 		  </div>
 		</div>
-
+		
+		<div id="dropContainer">
+		</div>
+      <!-- Close drop-zone -->   
       <script type="text/javascript" src="js/content.js"></script>
       <script type="text/javascript" src="js/bootstrap-notify.min.js"></script>
       

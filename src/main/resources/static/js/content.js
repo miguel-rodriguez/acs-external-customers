@@ -36,10 +36,14 @@ function copyNodes(path) {
     	message: 'Ready to copy...paste your file(s) in the destination folder.' 
     },{
     	// settings
-    	delay: 2000,
+    	delay: 3000,
     	animate: {
     		enter: 'animated fadeInDown',
     		exit: 'animated fadeOutUp'
+    	},
+    	placement: { 
+    		from: 'top',
+    		align: 'center',
     	},
     });
 }
@@ -59,12 +63,17 @@ function moveNodes(path) {
     $.notify({
     	// options
     	message: 'Ready to move...paste your file(s) in the destination folder.' 
-    },{
+    },
+    {
     	// settings
-    	delay: '2000',
+    	delay: 3000,
     	animate: {
     		enter: 'animated fadeInDown',
     		exit: 'animated fadeOutUp'
+    	},
+    	placement: { 
+    		from: 'top',
+    		align: 'center',
     	},
     });
 }
@@ -86,10 +95,14 @@ function pasteNodes(path) {
     	message: 'Content pasted.' 
     },{
     	// settings
-    	delay: 2000,
+    	delay: 3000,
     	animate: {
     		enter: 'animated fadeInDown',
     		exit: 'animated fadeOutUp'
+    	},
+    	placement: { 
+    		from: 'top',
+    		align: 'center',
     	},
     });
     
@@ -98,7 +111,7 @@ function pasteNodes(path) {
         document.getElementById("pasteFilesForm").submit();
     	sessionStorage.removeItem("files");
         document.getElementById("pasteNodesImage").style.display = 'none';
-    }, 1000); 
+    }, 2000); 
 }
 
 //Create folder pop up window and form submission
@@ -151,19 +164,63 @@ function uploadContent() {
 }
 
 // DnD container
-function dragstartHandler(event){
+function dragstartHandler(evt){
+      evt.preventDefault();
+      element = document.getElementById("dropContainer");
 	  event.originalEvent.dataTransfer.setData('text/plain', 'anything');
 }
+
+document.ondragover = dropContainer.ondragenter = function(evt) {
+    evt.preventDefault();
+    element = document.getElementById("dropContainer");
+    element.setAttribute("style","border: 4px dotted green; position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 100;");
+};
 
 dropContainer.ondragover = dropContainer.ondragenter = function(evt) {
     evt.preventDefault();
 };
 
+dropContainer.ondragleave =function(evt) {
+    evt.preventDefault();
+    element = document.getElementById("dropContainer");
+    element.setAttribute("style", "z-index: 0;");
+};
+
 dropContainer.ondrop = function(evt) {
     if(evt.preventDefault) { evt.preventDefault(); }
     if(evt.stopPropagation) { evt.stopPropagation(); }
-
-    uploadFiles2.files = evt.dataTransfer.files;
+    element = document.getElementById("dropContainer");
+    element.setAttribute("style","");
+    
+    isDirectory = false
+    var items = evt.dataTransfer.items;
+    for (var i=0; i<items.length; i++) {
+	  var item = items[i].webkitGetAsEntry();
+	  if (item.isDirectory) {
+	      isDirectory = true;
+      } 
+    }   
+    
+    if (isDirectory == false) {
+ 	    uploadFiles2.files = evt.dataTransfer.files;
+ 	    document.getElementById("dragAndDrop").submit();
+    } else {
+        $.notify({
+        	// options
+        	message: 'Can\'t drag & drop folders.' 
+        },{
+        	// settings
+        	delay: 3000,
+        	animate: {
+        		enter: 'animated fadeInDown',
+        		exit: 'animated fadeOutUp'
+        	},
+        	placement: { 
+        		from: 'top',
+        		align: 'center',
+        	},
+        });
+    }
 };
 
 // Row selection

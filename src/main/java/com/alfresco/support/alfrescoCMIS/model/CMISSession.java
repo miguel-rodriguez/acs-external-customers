@@ -128,6 +128,11 @@ public class CMISSession {
 			if (hit.getPropertyById("cmis:versionLabel").getFirstValue().toString() != null) {
 				node.setVersion(hit.getPropertyById("cmis:versionLabel").getFirstValue().toString());
 			}
+		
+			if (hit.getPropertyById("cmis:contentStreamLength").getFirstValue().toString() != null) {
+				Integer size = Integer.valueOf(hit.getPropertyById("cmis:contentStreamLength").getFirstValue().toString()) / 1000;
+				node.setSize(size);
+			}
 			
 			// Convert modification date to string
 	        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");	
@@ -146,18 +151,6 @@ public class CMISSession {
 			
 			if (cmisObject.getAllowableActions().getAllowableActions().contains(canDelete)) {
 			       node.setCanDelete(true); 
-			}
-			
-			if (BaseTypeId.CMIS_DOCUMENT.equals(hit.getPropertyById("cmis:baseTypeId").getFirstValue().toString())) {
-				if (hit.getPropertyById("cmis:parentId").getFirstValue().toString() != null) {
-					session.getObject(hit.getPropertyById("cmis:parentId").getFirstValue().toString());
-					CmisObject parent = session.getObject((ObjectId) hit.getPropertyById("cmis:parentId").getFirstValue());
-					node.setPath(parent.getPropertyValue("cmis:path").toString());
-				} else {
-					node.setPath(root_folder);
-				};
-			} else if (BaseTypeId.CMIS_FOLDER.equals(hit.getPropertyById("cmis:baseTypeId").getFirstValue().toString())) {
-				node.setPath(hit.getPropertyById("cmis:path").getFirstValue().toString()); 
 			}
 			
 			objects.add(node);
