@@ -13,6 +13,27 @@ $(document).ready(function(){
     $("#createFolderWindow").on('shown.bs.modal', function(){
         $(this).find('input[type="text"]').focus();
     });
+
+    // display any alert messages sent to this page
+    var message = document.getElementById("message").getAttribute('value');
+    if (message != null && message !== ""){
+        $.notify({
+        	// options
+        	message: message,
+        },{
+        	// settings
+        	type: 'danger',
+        	delay: 0,
+        	animate: {
+        		enter: 'animated fadeInDown',
+        		exit: 'animated fadeOutUp'
+        	},
+        	placement: { 
+        		from: 'top',
+        		align: 'center',
+        	},
+        });
+    }
 });
 
 window.addEventListener("dragover",function(e){

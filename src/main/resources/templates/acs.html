@@ -31,7 +31,9 @@
       <!-- Add navigation bar here -->
       <div class="center" th:insert="navBar :: navBar"></div>
       
-           <!-- List content -->
+      	<div id="message" th:value="${message}"></div>
+      	
+         <!-- List content -->
          <div th:if="${objects} != null">
             <div class="center panel panel-primary" style="bottom: 0px; height: 100%;">
                <div class="panel-heading">

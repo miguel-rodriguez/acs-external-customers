@@ -213,7 +213,6 @@ public class CMISSession {
                 while ((length = fis.read(buffer)) > 0) {
                     zos.write(buffer, 0, length);
                 }
- 
                 zos.closeEntry();
  
                 // close the InputStream
@@ -264,7 +263,7 @@ public class CMISSession {
 		}
 	}
 	
-	public void deleteByPath(Session session, String objectName) {
+	public String deleteByPath(Session session, String objectName) {
 		CmisObject cmisObject = session.getObjectByPath(objectName);
 		if (cmisObject instanceof Document) {
 			boolean isCheckedOut = Boolean.TRUE.equals(((DocumentProperties) cmisObject).isVersionSeriesCheckedOut());
@@ -274,9 +273,11 @@ public class CMISSession {
 		} else if (cmisObject instanceof Folder) {
 			((Folder) cmisObject).deleteTree(true, UnfileObject.DELETE, true);
 		}
+		
+		return null;
 	}
 	
-	public void deleteById(Session session, String nodePath) {
+	public String deleteById(Session session, String nodePath) {
 		CmisObject cmisObject = session.getObjectByPath(nodePath);
 		if (cmisObject instanceof Document) {
 			boolean isCheckedOut = Boolean.TRUE.equals(((DocumentProperties) cmisObject).isVersionSeriesCheckedOut());
@@ -286,12 +287,14 @@ public class CMISSession {
 		} else if (cmisObject instanceof Folder) {
 			((Folder) cmisObject).deleteTree(true, UnfileObject.DELETE, true);
 		}
+		
+		return null;
 	}
 	
-	public void pasteFilesByPath(Session session, String objectName, String sourceFolder, String destinationFolder, String action) {
+	public String pasteFilesByPath(Session session, String objectName, String sourceFolder, String destinationFolder, String action) {
 		CmisObject node = session.getObjectByPath(objectName);
-        Folder destFolder = (Folder)(session.getObjectByPath(destinationFolder));
-        
+        Folder destFolder = (Folder)(session.getObjectByPath(destinationFolder));        
+		String message = null;
 		
         if (action.equals("copy")){
 			if (node instanceof Document) {
@@ -308,13 +311,18 @@ public class CMISSession {
 						((Document) node).copy(destFolder, properties, null, null, null, null, null);
 					} catch (Exception e) {
 						logger.debug("Error copying content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
+						return "Error pasting content: " + e.getMessage();
 					}
 				}
 			} else if (node instanceof Folder) {
 				try {
-					copyFolder(destFolder, (Folder) node);
+					message = copyFolder(destFolder, (Folder) node);
+					if (message != null) {
+						return "Error copying content: "  + message;
+					}
 				} catch (Exception e) {
 					logger.debug("Error copying content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
+					return e.getMessage();
 				}
 			}
 		} else if (action.equals("move")){
@@ -326,26 +334,42 @@ public class CMISSession {
 						((Document) node).move(((FileableCmisObject) node).getParents().get(0), destFolder);
 					} catch (Exception e) {
 						logger.debug("Error moving content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
+						return "Error pasting content: " + e.getMessage();
 					}
 				}
 			} else if (node instanceof Folder) {
-				copyFolder(destFolder, (Folder) node);
+				try {
+					((Folder) node).move(((FileableCmisObject) node).getParents().get(0), destFolder);
+				} catch (Exception e) {
+					
+					logger.debug("Error pasting content: " + e.getMessage());
+					return "Error pasting content: " + e.getMessage();
+				}
 			}
 		}
+        
+        return null;
 	}
 	
-	public void copyFolder(Folder destinationFolder, Folder toCopyFolder) {
+	public String copyFolder(Folder destinationFolder, Folder folderToCopy) {
 		Map<String, Object> folderProperties =	new HashMap<String, Object>();
-		folderProperties.put(PropertyIds.NAME, toCopyFolder.getName());
+		folderProperties.put(PropertyIds.NAME, folderToCopy.getName());
 		folderProperties.put(PropertyIds.OBJECT_TYPE_ID,
-		toCopyFolder.getBaseTypeId().value());
-		Folder newFolder = destinationFolder.createFolder(folderProperties);
-		copyChildren(newFolder, toCopyFolder);
+		folderToCopy.getBaseTypeId().value());
+		Folder newFolder = null;
+		try {
+			newFolder = destinationFolder.createFolder(folderProperties);
+		} catch (Exception e) {
+			logger.debug("Can't create new folder: " + e.getMessage());
+			return "Can not create folder: " + e.getMessage();
+		}
+		copyChildren(newFolder, folderToCopy);
+		return null;
 	}
 	
-	public void copyChildren(Folder destinationFolder, Folder toCopyFolder) {
+	public void copyChildren(Folder destinationFolder, Folder folderToCopy) {
 		ItemIterable<CmisObject> immediateChildren =
-		toCopyFolder.getChildren();
+		folderToCopy.getChildren();
 		for (CmisObject child : immediateChildren) {
 			if (child instanceof Document) {
 				((Document) child).copy(destinationFolder);
@@ -355,39 +379,7 @@ public class CMISSession {
 		}
 	}
 	
-	/*
-	public void moveDocument(Session session, String objectName, String pasteFilesPath) {
-		Folder parentFolder = session.getRootFolder();
-		Folder sourceFolder = getDocumentParentFolder(document);
-		String destinationFolderName = "User Homes";
-		Folder destinationFolder = (Folder) getObject(
-		session, parentFolder, destinationFolderName);
-		// Check that we got the document, then move
-		if (document != null) {
-		// Make sure the user is allowed to move the document
-		// to a new folder
-		if (document.getAllowableActions().getAllowableActions().
-		contains(Action.CAN_MOVE_OBJECT) == false) {
-		throw new CmisUnauthorizedException("Current user does" +
-		" not have permission to move " +
-		getDocumentPath(document) + document.getName());
-		}
-		String pathBeforeMove = getDocumentPath(document);
-		try {
-		document.move(sourceFolder, destinationFolder);
-		logger.info("Moved document " + pathBeforeMove +
-		" to folder " + destinationFolder.getPath());
-		} catch (CmisRuntimeException e) {
-		logger.error("Cannot move document to folder " +
-		destinationFolder.getPath() + ": " + e.getMessage());
-		}
-		} else {
-		logger.error("Document is null, cannot move!");
-		}
-	}
-	*/
-	
-	public void uploadToPath(Session session, String path, MultipartFile[] uploadFiles ) {
+	public String uploadToPath(Session session, String path, MultipartFile[] uploadFiles ) {
 		String targetFolder = path;
 
         for(MultipartFile uploadedFile : uploadFiles) {
@@ -406,6 +398,7 @@ public class CMISSession {
 				Files.write(tempPath, bytes);
 			} catch (IOException e) {
 				e.printStackTrace();
+				return "Error uploading content: " + e.getMessage();
 			}
             
             // Upload file from server to repository
@@ -415,6 +408,7 @@ public class CMISSession {
 				fileContent = readFile(file);
 			} catch (IOException e) {
 				e.printStackTrace();
+				return "Error uploading content: " + e.getMessage();
 			}
             Folder parent = (Folder)(session.getObjectByPath(path));
             String targetPath = (path + "/" + file.getName()).replaceAll("/+", "/");
@@ -443,9 +437,10 @@ public class CMISSession {
 	    		}
             } catch (CmisObjectNotFoundException onfe) {
                 parent.createDocument(properties, contentStream, VersioningState.MAJOR);
+                return "Error uploading content: " + onfe.getMessage();
             }
         }
-
+		return null;
 	}
 	
 	public List <CMISObject> getObjectsByPath(Session session, String root_folder, String path, String back){

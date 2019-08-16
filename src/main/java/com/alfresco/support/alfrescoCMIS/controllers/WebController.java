@@ -188,7 +188,7 @@ public class WebController implements ErrorController {
     	List <CMISObject> objects = new ArrayList<CMISObject>();
     	// Current path to be passed back to the model
 		String currentPath = root_folder;
-
+		String message = "";
 		
 		/* Paste files  */
 		if ((sourceFolder != null && (sourceFolder.startsWith(root_folder + "/") || sourceFolder.equals(root_folder) || sourceFolder.equals("NA"))) &&
@@ -201,7 +201,11 @@ public class WebController implements ErrorController {
 	        for (Entry<String, Boolean> entry : nodes.entrySet()) {
 	        	if (entry.getValue()) {
 	        		if (pasteFiles != null) {
-		        		cmisSession.pasteFilesByPath(cmisSession.getSession(), entry.getKey(), sourceFolder, destinationFolder, pasteAction);	        			
+	        			message = cmisSession.pasteFilesByPath(cmisSession.getSession(), entry.getKey(), sourceFolder, destinationFolder, pasteAction);
+		        		logger.debug("Paste msg: " + message);
+		    			if (message != null) {
+		    				break;
+		    			}
 	        		}
 	        	}
 	        }
@@ -230,7 +234,7 @@ public class WebController implements ErrorController {
 	        for (Entry<String, Boolean> entry : nodes.entrySet()) {
 	        	
 	        	if (entry.getValue()) {
-	        		cmisSession.deleteByPath(cmisSession.getSession(), entry.getKey());
+	        		message = cmisSession.deleteByPath(cmisSession.getSession(), entry.getKey());
 	        	}
 	        }
 		}
@@ -276,7 +280,9 @@ public class WebController implements ErrorController {
         // Check if user has permissions to write to current path to enable/disable actions
         boolean canCreate = cmisSession.canCreate(cmisSession.getSession(), currentPath);
         
+        logger.debug("Message: " + message);
         // Add parameters to model to be used in html view
+        model.addAttribute("message", message);
 		model.addAttribute("objects", objects);
 		model.addAttribute("path", path);	
 		model.addAttribute("canCreate", canCreate);	
