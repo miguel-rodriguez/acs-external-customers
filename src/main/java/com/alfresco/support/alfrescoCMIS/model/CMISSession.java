@@ -111,12 +111,12 @@ public class CMISSession {
 			
 			String nodeRef=hit.getPropertyById("alfcmis:nodeRef").getFirstValue().toString();
 			if(session.getObject(nodeRef) == null) {
-				logger.debug("Node does not exist: " + nodeRef );
+				logger.error("Node does not exist: " + nodeRef );
 				continue;
 			}
 			// avoid duplicate search results
 			if (uniqueResults.contains(nodeRef.trim())){
-				logger.debug("Duplicate result detected: " + nodeRef );
+				logger.error("Duplicate result detected: " + nodeRef );
 				continue;
 			}
 			uniqueResults.add(nodeRef);
@@ -223,7 +223,7 @@ public class CMISSession {
             zos.close();
         }
         catch (IOException ioe) {
-            System.out.println("Error creating zip file: " + ioe);
+            logger.error("Error creating zip file: " + ioe);
         }
 		return zos;
 	}
@@ -238,6 +238,7 @@ public class CMISSession {
 			FileUtils.download(newDocument, downloadsFolder + "/" + newDocument.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.error("Error downloading file: " + e.getMessage());
 		}
 		return downloadsFolder + "/" + newDocument.getName();
 	}
@@ -310,8 +311,8 @@ public class CMISSession {
 						}
 						((Document) node).copy(destFolder, properties, null, null, null, null, null);
 					} catch (Exception e) {
-						logger.debug("Error copying content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
-						return "Error pasting content: " + e.getMessage();
+						logger.error("Error copying content: " + e.getMessage());
+						return "Error copying content: " + e.getMessage();
 					}
 				}
 			} else if (node instanceof Folder) {
@@ -321,29 +322,27 @@ public class CMISSession {
 						return "Error copying content: "  + message;
 					}
 				} catch (Exception e) {
-					logger.debug("Error copying content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
+					logger.error("Error copying content: " + e.getMessage());
 					return e.getMessage();
 				}
 			}
 		} else if (action.equals("move")){
-			logger.debug("moving file...");
 			if (node instanceof Document) {
 				boolean isCheckedOut = Boolean.TRUE.equals(((DocumentProperties) node).isVersionSeriesCheckedOut());
 				if (!isCheckedOut) {
 					try {
 						((Document) node).move(((FileableCmisObject) node).getParents().get(0), destFolder);
 					} catch (Exception e) {
-						logger.debug("Error moving content: " + node.getId() + " : " + node.getName() + " msg: " + e.getMessage());
-						return "Error pasting content: " + e.getMessage();
+						logger.error("Error moving content: " + e.getMessage());
+						return "Error moving content: " + e.getMessage();
 					}
 				}
 			} else if (node instanceof Folder) {
 				try {
 					((Folder) node).move(((FileableCmisObject) node).getParents().get(0), destFolder);
 				} catch (Exception e) {
-					
-					logger.debug("Error pasting content: " + e.getMessage());
-					return "Error pasting content: " + e.getMessage();
+					logger.error("Error moving content: " + e.getMessage());
+					return "Error moving content: " + e.getMessage();
 				}
 			}
 		}
@@ -360,7 +359,7 @@ public class CMISSession {
 		try {
 			newFolder = destinationFolder.createFolder(folderProperties);
 		} catch (Exception e) {
-			logger.debug("Can't create new folder: " + e.getMessage());
+			logger.error("Can't create new folder: " + e.getMessage());
 			return "Can not create folder: " + e.getMessage();
 		}
 		copyChildren(newFolder, folderToCopy);
@@ -398,6 +397,7 @@ public class CMISSession {
 				Files.write(tempPath, bytes);
 			} catch (IOException e) {
 				e.printStackTrace();
+				logger.error("Error uploading content: " + e.getMessage());
 				return "Error uploading content: " + e.getMessage();
 			}
             
@@ -408,6 +408,7 @@ public class CMISSession {
 				fileContent = readFile(file);
 			} catch (IOException e) {
 				e.printStackTrace();
+				logger.error("Error uploading content: " + e.getMessage());
 				return "Error uploading content: " + e.getMessage();
 			}
             Folder parent = (Folder)(session.getObjectByPath(path));
@@ -437,7 +438,8 @@ public class CMISSession {
 	    		}
             } catch (CmisObjectNotFoundException onfe) {
                 parent.createDocument(properties, contentStream, VersioningState.MAJOR);
-                return "Error uploading content: " + onfe.getMessage();
+				logger.error("Error uploading content: " + onfe.getMessage());
+				return "Error uploading content: " + onfe.getMessage();
             }
         }
 		return null;
@@ -504,7 +506,7 @@ public class CMISSession {
 				node = new CMISObject();
 			}
 		} catch (Exception e) {
-			logger.debug("Parent folder not found: " + path);
+			logger.error("Parent folder not found: " + path);
 		}
 
 		return objects;
