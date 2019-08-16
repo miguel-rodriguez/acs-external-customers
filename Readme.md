@@ -14,17 +14,20 @@ The jar artifact it is already available in the target folder (target/acs-extern
 
 To rebuild the artifact download the project and run the following command from the root directory.
 
->mvn package -Dmaven.test.skip=true
+```
+mvn package -Dmaven.test.skip=true
+```
 
 This command will compile and create a new jar artifact in the target folder.
 
 ## Running the application
 To run the application first edit the application.properties file and set the following properties pointing to your ACS repository.
 
-
->alfresco_atompub_url=http://127.0.0.1:8080/alfresco/api/-default-/public/cmis/versions/1.1/atom
->repository_id=-default-
->root_folder=/External Collaboration 
+```
+alfresco_atompub_url=http://127.0.0.1:8080/alfresco/api/-default-/public/cmis/versions/1.1/atom
+repository_id=-default-
+root_folder=/External Collaboration 
+```
 
 Create the root folder in your ACS repository (/External Collaboration).
 
@@ -32,7 +35,9 @@ Set the relevant permissions on this folder to allow external users to collabora
 
 By detault this application is running on port 8888 but this can be changed in the application.properties file
 
->server.port=8888
+```
+server.port=8888
+```
 
 The application can be accessed via browser on http://host:8888, replacing host with the hostname/IP address of the server running the application.
 
