@@ -1,12 +1,26 @@
 var input = document.querySelector('input[type=file]');
 var selected = 0;
+var selectedEntry = "";
+
+// Function to check if file ends with any specified extension
+function endsWithAny(suffixes, string) {
+    return suffixes.some(function (suffix) {
+        return string.endsWith(suffix);
+    });
+}
 
 // things to do when the page is loaded
 $(document).ready(function(){
 	// disable pasting if there are no files selected
-	//alert(sessionStorage.getItem("files"));
-	if (sessionStorage.getItem("files") === "null" || sessionStorage.getItem("files") == null){
-		document.getElementById("pasteNodesImage").style.display = 'none';
+	console.log(sessionStorage.getItem("files"));
+	if ((sessionStorage.getItem("files") === "null" || sessionStorage.getItem("files") == null) && canCreate==true) {
+		if (document.getElementById("pasteNodesImage") !== null){
+			document.getElementById("pasteNodesImage").style.display = 'none';
+		}
+	} else {
+		if (document.getElementById("pasteNodesImage") !== null){
+			document.getElementById("pasteNodesImage").style.display = 'inline';
+		}
 	}
 	
 	// set the focus in the create folder modal window
@@ -164,8 +178,15 @@ function deleteNodes() {
 
 // Download nodes
 function downloadNodes(fileName, path) {
-    document.getElementById("downloadFiles").value = fileName;
+	let url = this.url;
+
+	document.getElementById("downloadFiles").value = fileName;
     document.getElementById("downloadFilesForm").submit();
+};
+
+//Preview file
+function previewFile() {
+		window.open('/preview?fileName=' + selectedEntry, '');
 };
 
 // Navigate to when clicking on folder url
@@ -177,7 +198,7 @@ function navigateTo(navigateTo, back) {
 
 // Upload 
 $("#upload").click(function () {
-    $("#uploadFiles").trigger('click');
+    $("#uploadFiles2").trigger('click');
 });
 
 function uploadContent() {
@@ -232,6 +253,7 @@ dropContainer.ondrop = function(evt) {
         },{
         	// settings
         	delay: 3000,
+        	type: 'danger',        	
         	animate: {
         		enter: 'animated fadeInDown',
         		exit: 'animated fadeOutUp'
@@ -263,49 +285,71 @@ $(document).ready(function() {
     });
     // process select / deselect row action
     table
-        .on('deselect', function(e, dt, type, indexes) {
-            var rowData = table.rows(indexes).data().toArray();
+    .on('select', function(e, dt, type, indexes) {
+    	if (canCreate==true) {
+    		document.getElementById("copyNodesImage").style.display = 'inline';
+    		document.getElementById("moveNodesImage").style.display = 'inline';
+    		document.getElementById("deleteNodesImage").style.display = 'inline';
+    	}
+
+        var rowData = table.rows(indexes).data().toArray();
+        selectedEntry = rowData[0][0];
+
+        // add selected elements and permission
+        for (i = 0; i < rowData.length; i++) {
+            el[rowData[i][0]] = "true";
+            canDelete[rowData[i][0]] = rowData[i][1];
+            selected++;
+        }
+        
+        // Allow preview if file ends with specific extension
+        if (endsWithAny([".pdf", ".jpg", ".txt", ".png"], selectedEntry) && selected==1){
+        	document.getElementById("previewFile").style.display = 'inline';
+        } else {
+        	document.getElementById("previewFile").style.display = 'none';
+        }
+
+        // iterate all selected elements and check if permission to delete is enabled
+        Object.keys(el).forEach(function(key) {
+            if (el[key] === "true" && canDelete[key] === "false") {
+            	if (canCreate==true) {
+            		document.getElementById("deleteNodesImage").style.display = 'none';
+            	}
+            }
+        });
+    })
+	.on('deselect', function(e, dt, type, indexes) {
+        var rowData = table.rows(indexes).data().toArray();
+        document.getElementById("previewFile").style.display = 'inline';
+        if (canCreate) {
             document.getElementById("deleteNodesImage").style.display = 'inline';
             document.getElementById("copyNodesImage").style.display = 'inline';
             document.getElementById("moveNodesImage").style.display = 'inline';
+        }
+        
+        for (i = 0; i < rowData.length; i++) {
+            el[rowData[i][0]] = "false";
+            canDelete[rowData[i][0]] = rowData[i][1];
 
-            for (i = 0; i < rowData.length; i++) {
-                el[rowData[i][0]] = "false";
-                canDelete[rowData[i][0]] = rowData[i][1];
+            selected--;
 
-                selected--;
-                if (selected == 0) {
+            document.getElementById("previewFile").style.display = 'none';
+            if (selected == 0) {
+            	if (canCreate==true) {
                     document.getElementById("deleteNodesImage").style.display = 'none';
                     document.getElementById("copyNodesImage").style.display = 'none';
                     document.getElementById("moveNodesImage").style.display = 'none';
+            	}
+            }
+        }
+
+        Object.keys(el).forEach(function(key) {
+            if (el[key] === "true" && canDelete[key] === "false") {
+                if (canCreate==true) {
+                	document.getElementById("deleteNodesImage").style.display = 'none';
                 }
             }
-
-            Object.keys(el).forEach(function(key) {
-                if (el[key] === "true" && canDelete[key] === "false") {
-                    document.getElementById("deleteNodesImage").style.display = 'none';
-                }
-            });
-        })
-        .on('select', function(e, dt, type, indexes) {
-            document.getElementById("deleteNodesImage").style.display = 'inline';
-            document.getElementById("copyNodesImage").style.display = 'inline';
-            document.getElementById("moveNodesImage").style.display = 'inline';
-
-            var rowData = table.rows(indexes).data().toArray();
-
-            // add selected elements and permission
-            for (i = 0; i < rowData.length; i++) {
-                el[rowData[i][0]] = "true";
-                canDelete[rowData[i][0]] = rowData[i][1];
-                selected++;
-            }
-
-            // iterate all selected elements and check if permission to delete is enabled
-            Object.keys(el).forEach(function(key) {
-                if (el[key] === "true" && canDelete[key] === "false") {
-                    document.getElementById("deleteNodesImage").style.display = 'none';
-                }
-            });
         });
+    });
 });
+

@@ -34,14 +34,15 @@
             <div class="center panel panel-primary">
                <div class="panel-heading">Search Results
    	           <span style="float:right; ">
+   	             <a id="previewFile" onclick="previewFile()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none">|&nbsp;&nbsp;&nbsp;&nbsp;<span
+                  class="glyphicon glyphicon-eye-open" aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>View&nbsp; &nbsp; | &nbsp; &nbsp;</a>
                   <a id="copyNodesImage" onclick="copyNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
                   class="glyphicon glyphicon-copy" aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Copy&nbsp; &nbsp; | &nbsp; &nbsp;</a>
                   <a id="moveNodesImage" onclick="moveNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
                   class="glyphicon glyphicon-move" aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Move&nbsp; &nbsp; | &nbsp; &nbsp;</a>
                   <a id="deleteNodesImage" onclick="confirmDeleteNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
-                  class="glyphicon glyphicon-remove" aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Delete</a>
-	           	  </span>
-	           </span>
+                  class="glyphicon glyphicon-remove" aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Delete&nbsp; &nbsp; | &nbsp; &nbsp;</a>
+           	  </span>
 	           </div>
                <div th:if="${not #lists.isEmpty(objects)}">
                   <div style="padding: 10px;">

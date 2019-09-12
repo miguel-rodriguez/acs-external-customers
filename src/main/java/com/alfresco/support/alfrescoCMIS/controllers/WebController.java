@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-import com.alfresco.support.alfrescoCMIS.model.CMISSession;
+import com.alfresco.support.alfrescoCMIS.controllers.CMISSession;
 import com.alfresco.support.alfrescoCMIS.model.Login;
 import com.alfresco.support.alfrescoCMIS.model.Search;
 import com.alfresco.support.alfrescoCMIS.model.CMISObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -29,11 +29,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +43,8 @@ import javax.servlet.http.HttpSession;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.alfresco.support.alfrescoCMIS.controllers.Docx2PdfConversion;
 
 @Controller
 @ControllerAdvice
@@ -92,12 +91,12 @@ public class WebController implements ErrorController {
      * @return login view
      */
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(Model model, HttpServletRequest request) {
         model.addAttribute("login", new Login());
         //go to login page
         return "login";        
     }
-
+    
     /**
      * Process login request. If user is authenticated redirect to acs navigation page
      * @param model
@@ -108,6 +107,27 @@ public class WebController implements ErrorController {
     public void login(Model model, @ModelAttribute Login login, HttpServletResponse response) {
     	logger.debug("Authentication details - username: " + login.getUsername());
     	cmisSession = new CMISSession();
+    	
+    	logger.debug("requesting token");
+
+    	
+    	// Send request to keycloak for token
+    	/*
+    	RestTemplate restTemplate = new RestTemplate();
+    	HttpHeaders headers = new HttpHeaders();
+    	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    	MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+    	map.add("grant_type", "password");
+    	map.add("client_id", "Alfresco");
+    	map.add("client_secret", "8a200156-e4ae-4752-9d46-b25702850d7e");
+    	map.add("username", "bdu");
+    	map.add("password", "bdu");
+    	
+    	String url = "http://localhost:9080/auth/realms/Alfresco/protocol/openid-connect/token";
+    	HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+    	ResponseEntity<TokenRequest> tokenResponse = restTemplate.postForEntity(url, request , TokenRequest.class);
+    	logger.debug("token response: " + tokenResponse);
+    	*/
       	cmisSession.connect(alfresco_atompub_url, repository_id, login.getUsername(), login.getPassword());
 
         try {
@@ -123,12 +143,13 @@ public class WebController implements ErrorController {
      * @param response
      */
     @RequestMapping("/logout")
-    public void logout(HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
 		// go to login page if session is null, otherwise go to acs navigation
     	cmisSession = null;
         try {
+            request.logout();
         	response.sendRedirect("login");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
@@ -162,6 +183,7 @@ public class WebController implements ErrorController {
     		@RequestParam(required = false) String delete,
     		@RequestParam(required = false, name = "folderName") String folderName,
     		@RequestParam(required = false) String downloadFiles,
+    		@RequestParam(required = false) String previewFile,
     		@RequestParam(required = false) String deleteFiles,
     		@RequestParam(required = false) String sourceFolder,
     		@RequestParam(required = false) String destinationFolder,
@@ -178,6 +200,7 @@ public class WebController implements ErrorController {
     	logger.debug("delete: " + delete);
     	logger.debug("folderName: " + folderName);
     	logger.debug("downloadFiles: " + downloadFiles);
+    	logger.debug("previewFile: " + previewFile);
     	logger.debug("deleteFiles: " + deleteFiles);
     	logger.debug("sourceFolder: " + sourceFolder);
     	logger.debug("destinationFolder: " + destinationFolder);
@@ -257,6 +280,19 @@ public class WebController implements ErrorController {
 			session.setAttribute("downloadFiles", downloadFiles);
 			try {
 	        	response.sendRedirect("download");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		/* Preview content */
+		logger.debug("Preview file: " + previewFile);
+
+		if (previewFile != null && previewFile.startsWith(root_folder + "/")) {
+			session = request.getSession(false);
+			session.setAttribute("previewFile", previewFile);
+			try {
+	        	response.sendRedirect("preview");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -407,6 +443,41 @@ public class WebController implements ErrorController {
          .body(resource);
     }
    
+    /**
+     * Preview file to server and then push it down to client
+     * @return ResponseEntity
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    @GetMapping("/preview")
+    public ResponseEntity<InputStreamResource> previewFile(
+    		HttpServletRequest request,
+    		HttpServletResponse response,
+    		@RequestParam(required = false) String fileName 
+    		) throws IOException {
+
+        logger.debug("preview file : " + fileName);
+        
+		String localFile = cmisSession.downloadDocumentByPath(cmisSession.getSession(), fileName);
+		
+		if (localFile.endsWith(".docx")) {
+			Docx2PdfConversion conversion = new Docx2PdfConversion();
+			String pdfFileName = localFile.substring(0, localFile.lastIndexOf(".")) + ".pdf";
+			conversion.convert(localFile, pdfFileName);
+			localFile = pdfFileName;
+		} 
+		
+		File file = new File(localFile);
+    	InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+    	MediaType mediaType = MediaTypeUtils.getMediaTypeForFileName(this.servletContext, localFile);
+    	return ResponseEntity.ok()
+         .header(HttpHeaders.CONTENT_DISPOSITION,
+               "inline;filename=" + file.getName())
+         .contentType(mediaType).contentLength(file.length())
+         .body(resource);
+    }
+    
     /**
      * Download file to server and then push it down to client
      * @return ResponseEntity

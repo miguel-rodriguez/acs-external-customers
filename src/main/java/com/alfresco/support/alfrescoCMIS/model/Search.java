@@ -10,4 +10,9 @@ public class Search {
 	public String getTerm(){
 		return this.term;
 	}
+	
+	@Override
+	public String toString() {
+		return "Search [term=" + term + "]";
+	}
 }

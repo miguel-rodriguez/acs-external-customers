@@ -2,6 +2,7 @@ var input = document.querySelector('input[type=file]');
 var selected = 0;
 var el = {};
 var canDelete = {};
+var selectedEntry = "";
 
 // Upload form
 /*
@@ -9,6 +10,13 @@ input.onchange = function() {
     $("#uploadFiles2").trigger('click');
 };
 */
+
+//Function to check if file ends with any specified extension
+function endsWithAny(suffixes, string) {
+    return suffixes.some(function (suffix) {
+        return string.endsWith(suffix);
+    });
+}
 
 $("#upload").click(function() {
     $("#uploadFiles2").trigger('click');
@@ -107,6 +115,11 @@ function moveNodes(path) {
     });
 }
 
+//Preview file
+function previewFile() {
+		window.open('/preview?fileName=' + selectedEntry, '');
+};
+
 //Row selection
 $(document).ready(function() {
     var events = $('#events');
@@ -124,6 +137,8 @@ $(document).ready(function() {
     table
         .on('deselect', function(e, dt, type, indexes) {
             var rowData = table.rows(indexes).data().toArray();
+            document.getElementById("previewFile").style.display = 'inline';
+
             document.getElementById("deleteNodesImage").style.display = 'inline';
             document.getElementById("copyNodesImage").style.display = 'inline';
             document.getElementById("moveNodesImage").style.display = 'inline';
@@ -133,6 +148,8 @@ $(document).ready(function() {
                 canDelete[rowData[i][0]] = rowData[i][1];
 
                 selected--;
+                
+                document.getElementById("previewFile").style.display = 'none';
                 if (selected == 0) {
                     document.getElementById("deleteNodesImage").style.display = 'none';
                     document.getElementById("copyNodesImage").style.display = 'none';
@@ -152,8 +169,10 @@ $(document).ready(function() {
             document.getElementById("deleteNodesImage").style.display = 'inline';
             document.getElementById("copyNodesImage").style.display = 'inline';
             document.getElementById("moveNodesImage").style.display = 'inline';            
+            
             var rowData = table.rows(indexes).data().toArray();
-
+            selectedEntry = rowData[0][0];
+            
             // add selected elements and permission
             for (i = 0; i < rowData.length; i++) {
                 el[rowData[i][0]] = "true";
@@ -161,6 +180,13 @@ $(document).ready(function() {
                 selected++;
             }
 
+            // Allow preview if file ends with specific extension
+            if (endsWithAny([".pdf", ".jpg", ".txt", ".png"], selectedEntry) && selected==1){
+            	document.getElementById("previewFile").style.display = 'inline';
+            } else {
+            	document.getElementById("previewFile").style.display = 'none';
+            }
+            
             // iterate all selected elements and check if permission to delete is enabled
             Object.keys(el).forEach(function(key) {
                 if (el[key] === "true" && canDelete[key] === "false") {

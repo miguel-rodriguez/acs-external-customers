@@ -19,4 +19,9 @@ public class Login {
 	public String getPassword(){
 		return this.password;
 	}
+
+	@Override
+	public String toString() {
+		return "Login [username=" + username + ", password=" + password + "]";
+	}
 }

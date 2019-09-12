@@ -100,4 +100,12 @@ public class CMISObject {
 	public boolean getCanDelete(){
 		return this.canDelete;
 	}
+
+	@Override
+	public String toString() {
+		return "CMISObject [name=" + name + ", id=" + id + ", nodeRef=" + nodeRef + ", baseTypeId=" + baseTypeId
+				+ ", path=" + path + ", createdBy=" + createdBy + ", lastModifiedBy=" + lastModifiedBy
+				+ ", lastModificationDate=" + lastModificationDate + ", version=" + version + ", size=" + size
+				+ ", canDelete=" + canDelete + "]";
+	}
 }

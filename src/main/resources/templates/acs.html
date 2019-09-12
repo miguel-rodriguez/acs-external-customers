@@ -45,28 +45,33 @@
 		               	</a>
 	               </span>
                   <b><span th:text="'Path: ' + ${path}"></span></b>
-                  <span style="float:right; ">
-                  <a id="copyNodesImage" th:attr="onclick=|copyNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
-                     class="glyphicon glyphicon-copy"
-                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Copy&nbsp; &nbsp; | &nbsp; &nbsp;</a>
+				  <span style="float:right; ">
+	                  |&nbsp; &nbsp;
+					  <a id="previewFile" th:attr="onclick=|previewFile()|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+						 class="glyphicon glyphicon-eye-open"
+						 aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>View&nbsp; &nbsp; | &nbsp; &nbsp;</a>				  
+	                  <a id="copyNodesImage" th:attr="onclick=|copyNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:contents"><span
+	                     class="glyphicon glyphicon-copy"
+	                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Copy&nbsp; &nbsp; | &nbsp; &nbsp;</a>
+                  <!--  Only show if can create objects on folder -->
                   <span th:if="${canCreate}" style="float:right; ">
-                  <a id="moveNodesImage" th:attr="onclick=|moveNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
-                     class="glyphicon glyphicon-move"
-                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Move&nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
-                  <a id="pasteNodesImage" th:attr="onclick=|pasteNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:inline"><span
-	                 class="glyphicon glyphicon-paste"
-	                 aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Paste &nbsp; &nbsp; | &nbsp; &nbsp;</a>
-                  <a id="deleteNodesImage" onclick="confirmDeleteNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
-                     class="glyphicon glyphicon-remove"
-                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Delete &nbsp; &nbsp; | &nbsp; &nbsp;</a>
-                  <a id="createFolderImage" onclick="createFolder()" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
-                     class="glyphicon glyphicon-folder-open"
-                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Create &nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
-                  <a id="upload" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
-                     class="glyphicon glyphicon-upload"
-                     aria-hidden="true" style="cursor:pointer; "></span>&nbsp; Upload</a>
+	                  <a id="moveNodesImage" th:attr="onclick=|moveNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+	                     class="glyphicon glyphicon-move"
+	                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Move&nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
+	                  <a id="pasteNodesImage" th:attr="onclick=|pasteNodes('${path}')|" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+		                 class="glyphicon glyphicon-paste"
+		                 aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Paste &nbsp; &nbsp; | &nbsp; &nbsp;</a>
+	                  <a id="deleteNodesImage" onclick="confirmDeleteNodes()" style="align=right; color: white; text-decoration: none; cursor:pointer; display:none"><span
+	                     class="glyphicon glyphicon-remove"
+	                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Delete &nbsp; &nbsp; | &nbsp; &nbsp;</a>
+	                  <a id="createFolderImage" onclick="createFolder()" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
+	                     class="glyphicon glyphicon-folder-open"
+	                     aria-hidden="true" style="cursor:pointer; ">&nbsp;</span>Create &nbsp; &nbsp; | &nbsp; &nbsp;</a>                  
+	                  <a id="upload" style="align=right; color: white; text-decoration: none; cursor:pointer;"><span
+	                     class="glyphicon glyphicon-upload"
+	                     aria-hidden="true" style="cursor:pointer; "></span>&nbsp; Upload &nbsp; &nbsp; |</a>
                   </span>
-				  </span>
+                  </span>
                </div>
                <div th:if="${not #lists.isEmpty(objects)}">
                   <div style="padding: 10px;">
@@ -82,7 +87,7 @@
                               <th>Modification Date</th>
                               <th>Version</th>
                               <th>Size (Kb)</th>
-                              <th style="text-align: center; ">Download</th>
+                              <th style="text-align: center;">Download</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -112,7 +117,8 @@
                               <td th:text="${object.lastModificationDate}"></td>
                               <td th:text="${object.version}"></td>
                               <td th:text="${object.size}"></td>
-                              <td style="text-align: center; ">
+                              <td style="text-align: center">
+                              
                                  <!-- Download action -->
                                  <span th:switch="${object.baseTypeId}">
                                  <span th:case="'cmis:document'">
@@ -124,7 +130,7 @@
                                  </a>
                                  </span>
                                  </span>
-                                 <!--  end of Download action -->
+                                 <!--  end of Download action -->    
                               </td>                              
                            </tr>
                         </tbody>
@@ -171,6 +177,10 @@
 		   <input type="text" id="downloadFiles" name="downloadFiles" style="visibility:hidden;" />
 		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />         
 		</form>
+		<form id="previewFileForm" enctype="multipart/form-data" method="POST">
+		   <input type="text" id="previewFile" name="previewFile" style="visibility:hidden;" />
+		   <input type="text" id="path" name="path" th:value="${path}" multiple style="visibility:hidden;" />         
+		</form>		
 		<!-- 
 		<form id="copyFilesForm" enctype="multipart/form-data" method="POST">
 		   <input type="text" id="copyFiles" name="copyFiles" style="visibility:hidden;" />
@@ -229,8 +239,12 @@
 		<div id="dropContainer">
 		</div>
       <!-- Close drop-zone -->   
+      <script>
+      	var canCreate = [[${canCreate}]];
+      </script> 
       <script type="text/javascript" src="js/content.js"></script>
       <script type="text/javascript" src="js/bootstrap-notify.min.js"></script>
+      <script type="text/javascript" src="js/pdf.js"></script>
       
    </body>
 </html>
